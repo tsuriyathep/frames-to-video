@@ -17,11 +17,11 @@ class Predictor(BasePredictor):
 
         if frames_zip is not None:
             with zipfile.ZipFile(frames_zip, 'r') as zip_ref:
-                zip_ref.extractall(f"{temp_folder_path}/frames")
+                zip_ref.extractall(f"{temp_folder_path}")
 
-            frame_files = sorted(os.listdir(f"/{temp_folder_path}/frames"))
+            frame_files = sorted(os.listdir(f"/{temp_folder_path}"))
             for i, frame_file in enumerate(frame_files):
-                os.rename(os.path.join(f"{temp_folder_path}/frames", frame_file), f"{temp_folder_path}/frames/out{i:03d}.png")
+                os.rename(os.path.join(f"{temp_folder_path}", frame_file), f"{temp_folder_path}/out{i:03d}.png")
 
         elif frames_urls is not None:
             url_list = frames_urls.split('\n')
@@ -29,14 +29,14 @@ class Predictor(BasePredictor):
                 response = requests.get(url, stream=True)
                 response.raise_for_status()
 
-                with open(f"{temp_folder_path}/frames/out{i:03d}.png", 'wb') as out_file:
+                with open(f"{temp_folder_path}/out{i:03d}.png", 'wb') as out_file:
                     shutil.copyfileobj(response.raw, out_file)
 
         else:
             raise ValueError("Must provide either frames_zip or frames_urls")
 
         video = f"{temp_folder_path}/out.mp4"
-        command = f"ffmpeg -r {fps} -i {temp_folder_path}/frames/out%03d.png -c:v libx264 -vf 'fps={fps},format=yuv420p' {video}"
+        command = f"ffmpeg -r {fps} -i {temp_folder_path}/out%03d.png -c:v libx264 -vf 'fps={fps},format=yuv420p' {video}"
 
         subprocess.run(command, shell=True, check=True)
 
